@@ -1,9 +1,5 @@
-import pdfminer
+import re
 
-
-def main():
-    print('0')
-
-
-if __name__ == '__main__':
-    main()
+text = re.sub('<[^<]+>', "", open("./").read())
+with open("/path/to/file", "w") as f:
+    f.write(text)
