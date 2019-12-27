@@ -41,7 +41,7 @@ def convertMultiple(pdfDir, txtDir):
     if pdfDir == "":
         pdfDir = os.getcwd() + "\\"  # if no pdfDir passed in
     for pdf in os.listdir(pdfDir):  # iterate through pdfs in pdf directory
-        fileExtension = pdf.split(".")[-1]
+        fileExtension = pdf.split(".")
         if fileExtension == "pdf":
             #text = convert(pdfFilename)  # get string of text content of pdf
             page = 2
