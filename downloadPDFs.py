@@ -5,7 +5,8 @@ from urllib.error import URLError, HTTPError
 
 
 directoryPDF = "./resources/pdf/"
-
+# Questo serve come una specie di autenticazione da quel poco che ho cercato, altrimenti mi vede come un BOT e non mi permette di scaricare in maniera automatizzata da alcuni url
+headers = {'User-Agent': 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:71.0) Gecko/20100101 Firefox/71.0'}
 
 # Per tenere traccia di tutti i pdf che non vengono scaricati
 with open(directoryPDF+"pdfNonTrovati.txt", "w") as f:
@@ -16,29 +17,29 @@ listaFile = os.listdir("./resources/examples")
 for i,file in enumerate(listaFile):
     fileName = file.split("_")[0]
     fileExtention = file.split(".")[1]
+    # Lista degli url da cui si proverà a scaricare il PDF
+    urls = ["https://www.ncbi.nlm.nih.gov/pmc/articles/" + fileName + "/pdf",
+            "http://europepmc.org/backend/ptpmcrender.fcgi?accid=" + fileName + "&blobtype=pdf"]
+
     if fileExtention == "jpg":
         goodUrl = False
-        try:
-            url = "http://europepmc.org/backend/ptpmcrender.fcgi?accid=" + fileName + "&blobtype=pdf" #Primo URL per cercare i PDF
-            response = urllib.request.urlopen(url)
-            goodUrl = True
-        except:
-            print("Document "+fileName+" does not exist in http://europepmc.org")
+        for url in urls:
             try:
-                print("Try https://www.ncbi.nlm.nih.gov")
-                # Purtroppo se provo a fare una richiesta http (come sopra) vengo bloccato e non mi da alcuna rispota (viene lanciata un'eccezione)
-                # TODO: O non si fa niente o si trova un altro modo per scaricare questo documento che non era presente nel primo url
+                result = requests.get(url, headers=headers)
+                if result.status_code == 200:
+                    goodUrl = True
+                    break
             except:
-                print("Document " + fileName + " does not exist in https://www.ncbi.nlm.nih.gov")
-        #Scarica solo se è stato trovato un buon URL da dove scaricare il PDF
+                pass
+        # Salva solo se ha trovato un buon url da cui scaricare il PDF
         if goodUrl:
-            webContent = response.read()
             f = open(directoryPDF + fileName + ".pdf", "wb")
-            f.write(webContent)
+            f.write(result.content)
             f.close()
-            print("Download: {:.2f}%".format(i / len(listaFile)))
+            print("Download "+fileName+": {:.2f}%".format(i / len(listaFile)))
         else:
             print("Document "+fileName+" not found")
+            # Memorizza i PDF che non trova
             with open(directoryPDF+"pdfNonTrovati.txt","a") as f:
                 f.write(fileName+"\n")
-print("Done")
+print("Done!")
