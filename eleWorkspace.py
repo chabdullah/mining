@@ -51,7 +51,16 @@ def read_json():
             print('')
 
 
-read_json()
+def find_middle_string():
+    s = "cniernvbiinizionceirbn4krb4rfineerib3nhjefi3inizioenriubrbueffinecnierbf"
+    start = "inizio"
+    end = "fine"
+    result = re.search('inizio(.*)fine', s)
+    print(result.group(1))
+
+
+find_middle_string()
+
 
 """
 text = re.sub('<[^<]+>', "", open("./").read())
