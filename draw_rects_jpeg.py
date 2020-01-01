@@ -4,7 +4,7 @@ import re
 from PIL import Image, ImageDraw
 
 
-# disegna rettangoli rossi sulle annotazioni json
+# disegna rettangoli rossi sulle annotazioni json (arancioni se sono figure)
 def json_rects():
     jpeg_path = './resources/jpeg/'
     json_path = "./resources/json/samples.json"
