@@ -13,13 +13,14 @@ def downloadPDFs():
         f.write("Pdf non trovati:\n")
 
 
-    listaFile = os.listdir("./resources/examples")
-    for i,file in enumerate(listaFile):
+    listaFile = os.listdir("./resources/jpeg")
+    for i, file in enumerate(listaFile):
         fileName = file.split("_")[0]
-        fileExtention = file.split(".")[1]
+        fileExtention = file.split(".")[-1]
         # Lista degli url da cui si proverà a scaricare il PDF
-        urls = ["https://www.ncbi.nlm.nih.gov/pmc/articles/" + fileName + "/pdf",
-                "http://europepmc.org/backend/ptpmcrender.fcgi?accid=" + fileName + "&blobtype=pdf"]
+        # TODO capire come scaricare pdf non corretti per elena
+        urls = ["http://europepmc.org/backend/ptpmcrender.fcgi?accid=" + fileName + "&blobtype=pdf",
+                "https://www.ncbi.nlm.nih.gov/pmc/articles/" + fileName + "/pdf"]
 
         if fileExtention == "jpg":
             goodUrl = False
@@ -40,6 +41,6 @@ def downloadPDFs():
             else:
                 print("Document "+fileName+" not found")
                 # Memorizza i PDF che non trova
-                with open(directoryPDF+"pdfNonTrovati.txt","a") as f:
+                with open(directoryPDF+"pdfNonTrovati.txt", "a") as f:
                     f.write(fileName+"\n")
     print("Done!")
