@@ -5,11 +5,12 @@ from PyPDF2 import PdfFileReader, PdfFileWriter
 
 
 def pdf2xml():
-    listaFile = os.listdir("./resources/pdf")
+    pdf_path = "./resources/pdf/pdf_estratti/"
+    listaFile = os.listdir(pdf_path)
     for i, pdf in enumerate(listaFile):
         pdfName, pdfExtension = pdf.split(".")
         if pdfExtension == "pdf":
-            command = "pdf2txt.py -t xml ./resources/pdf/"+pdf+" > ./resources/xml/"+pdfName+".xml"
+            command = "pdf2txt.py -t xml " + pdf_path + pdf+" > ./resources/xml/"+pdfName+".xml"
             os.system(command)
             print("Pdf " + pdfName + " converted into XML: {:.2f}%".format((i / len(listaFile)) * 100))
 
@@ -19,7 +20,8 @@ def optimizeXML():
     pathXML_optimazed = "./resources/xml/xml_optimazed/"
     listaFile = os.listdir(pathXML)
     for j, fileXML in enumerate(listaFile):
-        if os.path.isfile(pathXML + fileXML):
+
+        if fileXML.split('.')[-1] == 'xml':
             f = open(pathXML + fileXML)
             testo = (f.read())
 
