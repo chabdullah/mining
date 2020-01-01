@@ -4,7 +4,7 @@ import downloadPDFs
 import utility
 
 # Download dei pdf a partire dai nomi dei file JPG
-#downloadPDFs.downloadPDFs()
+downloadPDFs.downloadPDFs()
 # Divide i pdf per pagina secondo quelle che sono sul json
 utility.extract_pages_pdf()
 # Conversione dei pdf in xml "grezzi"
