@@ -85,7 +85,6 @@ def extract_pages_pdf():
                 pdf_writer.write(output_pdf)
 
 
-
 def testFigure():
     img_size = (128,128)
     dim_descrittore = 1024
