@@ -60,4 +60,3 @@ def xml_rects():
 
 
 xml_rects()
-json_rects()
