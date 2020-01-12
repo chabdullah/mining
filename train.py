@@ -18,6 +18,7 @@ from tensorboardX import SummaryWriter
 from torchvision.utils import save_image
 from itertools import product
 from NnModel import NnModel
+from utility import slimJson, extractImagesInfoIntoJson, extractCroppedFigures, testFigure, testResults
 
 
 def load_data(batch_size):
@@ -73,7 +74,7 @@ def train(epoch):
     if batch_id % log_interval == 0:
       print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(epoch, batch_id * len(data), len(train_loader.dataset),
         100. * batch_id / len(train_loader), loss.item()))
-      torch.save(network.state_dict(), './resources//docFigure/model128_2.pth')
+      torch.save(network.state_dict(), './resources//docFigure/model128_2_classi.pth')
       #torch.save(optimizer.state_dict(), './savedState/optimizer'+dataset_type+'.pth')
   tb.add_scalar('Train Loss', 100.0 * total_loss/len(train_loader.dataset), epoch)
   tb.add_scalar('Train Accuracy', 100 * correct / len(train_loader.dataset), epoch)
@@ -130,12 +131,12 @@ log_interval = 10
 batch_size = 16
 n_epochs = 5
 img_size = (128,128)
-pretrained = True
+pretrained = False
 
 train_loader, val_loader = load_data(batch_size)
 network = NnModel(dim_descrittore, kernel_size)
 if pretrained:
-    network.load_state_dict(torch.load('./resources//docFigure/model128_2.pth'))
+    network.load_state_dict(torch.load('./resources/docFigure/model128_2_classi.pth'))
 network = network.to(device)
 optimizer = optim.SGD(network.parameters(), lr=lr, momentum=momentum)
 #optimizer.load_state_dict(torch.load('./savedState/optimizer' + dataset_type + '.pth'))
@@ -156,4 +157,12 @@ for epoch in range(n_epochs):
     test(epoch)
 tb.close()
 
+### Testare i risultati dopo l'addestramento ###
+#Pulire train.json per memorizzare solo le informazioni sulle figure
+slimJson()
+
+extractImagesInfoIntoJson()
+extractCroppedFigures()
+testFigure()
+testResults()
 

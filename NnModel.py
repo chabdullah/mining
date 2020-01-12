@@ -14,7 +14,7 @@ class NnModel(nn.Module):
         self.in_feature = int((((((((((128-kernel_size)+1)/2)-kernel_size)+1)/2)-kernel_size)+1)/2))
         self.in_feature *= self.in_feature * 128
         self.fc1 = nn.Linear(self.in_feature, dim_descrittore)
-        self.fc2 = nn.Linear(dim_descrittore, 28)
+        self.fc2 = nn.Linear(dim_descrittore, 2)
 
     def forward(self, x):
         x = F.relu(F.max_pool2d(self.conv1(x), 2))  # [ (S-k + 2*p)/s + 1 ] / 2

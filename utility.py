@@ -12,6 +12,8 @@ import operator
 from os import listdir
 from os.path import isfile, join
 import pandas as pd
+import itertools
+
 
 
 
@@ -89,7 +91,7 @@ def testFigure():
     img_size = (128,128)
     dim_descrittore = 1024
     kernel_size = 5
-    plots = [2, 3,5, 11, 13, 17, 19, 21, 23]
+    plots = [2, 3, 5, 11, 13, 17, 19, 21, 23]
     image_dataset = torchvision.datasets.ImageFolder(
         root='./resources/docFigure/data/training',
         transform=torchvision.transforms.Compose([
@@ -107,7 +109,7 @@ def testFigure():
             torchvision.transforms.ToTensor(),
         ])
     )
-    print("Image's labels are: ", image_dataset.class_to_idx)
+    #print("Image's labels are: ", image_dataset.class_to_idx)
     key_list_imageLabes = list(image_dataset.class_to_idx.keys())
     val_list_imageLabes = list(image_dataset.class_to_idx.values())
     image_loader = torch.utils.data.DataLoader(
@@ -119,89 +121,119 @@ def testFigure():
     network = NnModel(dim_descrittore, kernel_size)
     network.load_state_dict(torch.load('./resources/docFigure/pesi/model128_2.pth'))
     print("\n"*4)
-    for image, label in image_loader:
-        print("Image label: "+str(key_list_imageLabes[val_list_imageLabes.index(label.item())]))
-        predictions = {}
-        for i in range(100):
-            risultato = network(image)
-            pred = risultato.data.max(1, keepdim=True)[1]
-            pred = pred.item()
-            if pred in predictions.keys():
-                predictions[pred] += 1
-            else:
-                predictions[pred] = 1
-        prediction = key_list_classes[val_list_classes.index(max(predictions.items(), key=operator.itemgetter(1))[0])]
-        print("Prediction: ",prediction)
-        if max(predictions.items(), key=operator.itemgetter(1))[0] in plots:
-            print("It's a plot!")
-        print("*"*100)
+
+    with open('./resources/json/figureBboxInfo.json', 'r') as fp:
+        images = json.load(fp)
+        plotsFigures = []
+        for j, (image, label) in enumerate(image_loader):
+            imageLabel = str(key_list_imageLabes[val_list_imageLabes.index(label.item())])
+            print("Image label: "+ imageLabel)
+            predictions = {}
+            for i in range(20):
+                risultato = network(image)
+                pred = risultato.data.max(1, keepdim=True)[1]
+                pred = pred.item()
+                if pred in predictions.keys():
+                    predictions[pred] += 1
+                else:
+                    predictions[pred] = 1
+            prediction = key_list_classes[val_list_classes.index(max(predictions.items(), key=operator.itemgetter(1))[0])]
+            print("Prediction: ",prediction)
+            if max(predictions.items(), key=operator.itemgetter(1))[0] in plots:
+                print("It's a plot!")
+                plotsFigures.append({'file_name': imageLabel})
+            print("Progress: {:.2f}%".format((j / len(image_loader)) * 100))
+            print("*"*100)
+    with open('./resources/json/plotsFigures.json', 'w') as fp:
+        json.dump(plotsFigures, fp)
 
 
-def extractImagesFromJpg():
+
+def extractImagesInfoIntoJson():
     pathJson = './resources/json/labels/publaynet/trainSlim.json'
     with open(pathJson, 'r') as fp:
         samples = json.load(fp)
         print("Json loaded!")
 
     images = []
-    for j, image in enumerate(samples['images']):
-        for ann in samples['annotations']:
-            if ann['image_id'] == image['id']:
-                if ann['category_id'] == 5:
-                    images.append({'id': ann['image_id'], 'file_name': image['file_name'], 'bbox': ann['bbox']})
-                    #del
-        print("Image progress: {:.2f}%".format((j/len(samples["images"]))*100))
-    pathJpg = './resources/jpg/train/'
-    for i, image in enumerate(images):
-        pathFile = pathJpg + image['file_name']
-        if os.path.isfile(pathFile):
-            img = cv2.imread(pathFile)
-            x = int(image['bbox'][0])
-            y = int(image['bbox'][1])
-            width = int(image['bbox'][2])
-            height = int(image['bbox'][3])
-            crop_img = img[y:y + height, x:x + width]
-            name = image["file_name"].split("_")[0]
-            pathFile = "./resources/docFigure/data/test/"+name+"/"
-            if not os.path.exists(pathFile):
-                os.makedirs(pathFile)
-            pathFile += image['file_name']
-            cv2.imwrite(pathFile, crop_img)
-            print("Cropping progress: {:.2f}%".format((i / len(images)) * 100))
+    #numberImages = 500
+    #topImages = itertools.islice(samples['images'], numberImages)
+    topImages = samples['images']
+    numberImages = len(samples['images'])
 
+    for j, image in enumerate(topImages):
+        for k, ann in enumerate(samples['annotations']):
+            if ann['image_id'] == image['id']:
+                images.append({'id': ann['image_id'], 'file_name': image['file_name'], 'bbox': ann['bbox']})
+        print("Finding figures: {:.2f}%".format((j/numberImages)*100))
+    print("Figures found: ",len(images))
     with open('./resources/json/figureBboxInfo.json', 'w') as fp:
         json.dump(images, fp)
+
+
+def extractCroppedFigures():
+    with open('./resources/json/figureBboxInfo.json', 'r') as fp:
+        images = json.load(fp)
+        pathJpg = './resources/jpg/publaynet/train/'
+        for i, image in enumerate(images):
+            pathFile = pathJpg + image['file_name']
+            if os.path.isfile(pathFile) and  os.path.exists(pathFile):
+                img = cv2.imread(pathFile)
+                x = int(image['bbox'][0])
+                y = int(image['bbox'][1])
+                width = int(image['bbox'][2])
+                height = int(image['bbox'][3])
+                crop_img = img[y:y + height, x:x + width]
+                name = image["file_name"].split(".")[0]
+                pathFile = "./resources/docFigure/data/test/"+name+"/"
+                if not os.path.exists(pathFile):
+                    os.makedirs(pathFile)
+                pathFile += image['file_name']
+                #print(pathFile)
+                try:
+                    cv2.imwrite(pathFile, crop_img)
+                except:
+                    pass
+                print("Cropping figures: {:.2f}%".format((i / len(images)) * 100))
+
 
 
 def slimJson():
     pathJson = './resources/examples/samples.json'
     with open(pathJson, 'r') as fp:
         samples = json.load(fp)
-        for key in samples["annotations"]:
-            del key["segmentation"]
-            del key["iscrowd"]
-            del key["id"]
-            del key["area"]
+        for i,key in enumerate(samples["annotations"]):
+            if key["category_id"] == 5:
+                del key["segmentation"]
+                del key["iscrowd"]
+                del key["id"]
+                del key["area"]
+                del key["category_id"]
+            else:
+                del key["segmentation"]
+                del key["iscrowd"]
+                del key["id"]
+                del key["area"]
+                del key["image_id"]
+                del key["bbox"]
+                del key["category_id"]
+        newAnnotations = {"annotations":[i for i in samples["annotations"] if i]}
+        del samples["annotations"]
+        samples = {**samples, **newAnnotations}
         with open('./resources/json/magro.json', 'w') as fp:
             json.dump(samples, fp)
 
 
-#extractImagesFromJpg()
+def testResults():
+    with open('./resources/json/plotsFigures.json', 'r') as fp:
+        plots = json.load(fp)
+        for i, plot in enumerate(plots):
+            command = "cp ./resources/docFigure/data/test/"+plot['file_name']+"/"+plot['file_name']+".jpg ./resources/jpg/predictedPlots"
+            os.system(command)
+            print("Copying the result of the predictions: {:.2f}%".format((i/len(plots))))
+
+#slimJson()
+#extractImagesInfoIntoJson()
+#extractCroppedFigures()
 #testFigure()
-
-#pathJson = './resources/json/labels/publaynet/'
-#df = pd.read_json (r'./resources/json/labels/publaynet/train.json')
-
-#files = [f for f in listdir("./resources/jpg/train/") if isfile(join("./resources/jpg/train/", f))]
-#print(files)
-
-pathJson = './resources/examples/samples.json'
-with open(pathJson, 'r') as fp:
-    samples = json.load(fp)
-    annotation = samples["annotations"]
-    print(len(annotation))
-    print(annotation)
-    for i,obj in enumerate(annotation):
-        del samples[obj]
-    print(annotation)
-    #print(samples)
+#testResults()
