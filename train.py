@@ -14,7 +14,7 @@ from torch.optim.lr_scheduler import StepLR
 from torchvision import datasets, transforms
 from torch import nn, optim
 import torch.nn.functional as F
-from tensorboardX import SummaryWriter
+#from tensorboardX import SummaryWriter
 from torchvision.utils import save_image
 from itertools import product
 from NnModel import NnModel
@@ -74,10 +74,10 @@ def train(epoch):
     if batch_id % log_interval == 0:
       print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(epoch, batch_id * len(data), len(train_loader.dataset),
         100. * batch_id / len(train_loader), loss.item()))
-      torch.save(network.state_dict(), './resources//docFigure/model128_2_classi.pth')
+      torch.save(network.state_dict(), './resources/docFigure/pesi/model128_final.pth')
       #torch.save(optimizer.state_dict(), './savedState/optimizer'+dataset_type+'.pth')
-  tb.add_scalar('Train Loss', 100.0 * total_loss/len(train_loader.dataset), epoch)
-  tb.add_scalar('Train Accuracy', 100 * correct / len(train_loader.dataset), epoch)
+  #tb.add_scalar('Train Loss', 100.0 * total_loss/len(train_loader.dataset), epoch)
+  #tb.add_scalar('Train Accuracy', 100 * correct / len(train_loader.dataset), epoch)
 
 
   #for name, param in network.named_parameters():
@@ -102,8 +102,8 @@ def test(epoch):
   print('\nTest set: Avg. loss: {:.4f}, Accuracy: {}/{} ({:.0f}%)\n'.format(
     train_loss, correct, len(val_loader.dataset),
     100. * correct / len(val_loader.dataset)))
-  tb.add_scalar('Test Loss', 100.0 * train_loss, epoch)
-  tb.add_scalar('Test Accuracy', 100. * correct/len(val_loader.dataset), epoch)
+  #tb.add_scalar('Test Loss', 100.0 * train_loss, epoch)
+  #tb.add_scalar('Test Accuracy', 100. * correct/len(val_loader.dataset), epoch)
 
 
 def setDatasetFolder(dataset):
@@ -114,14 +114,17 @@ def setDatasetFolder(dataset):
             imageType = imageType.replace(" ","_")
             print("{} -> {}".format(imageName,imageType))
             srcPath = './resources/docFigure/grec_19/images/'+imageName
-            dstPath = './resources/docFigure/data/validation/'+imageType
+            if (imageType == "Graph_plots"):
+                dstPath = './resources/docFigure/data/training/'+imageType
+            else:
+                dstPath = './resources/docFigure/data/training/altri/'
             if not os.path.exists(dstPath):
                 os.makedirs(dstPath)
             copy2(srcPath,dstPath)
             line = f.readline()
 
 
-#setDatasetFolder("test")
+#setDatasetFolder("train")
 dim_descrittore = 1024
 kernel_size = 5
 device = "cpu"
@@ -129,14 +132,14 @@ lr = 0.01
 momentum = 0.5
 log_interval = 10
 batch_size = 16
-n_epochs = 5
+n_epochs = 15
 img_size = (128,128)
-pretrained = False
+pretrained = True
 
 train_loader, val_loader = load_data(batch_size)
 network = NnModel(dim_descrittore, kernel_size)
 if pretrained:
-    network.load_state_dict(torch.load('./resources/docFigure/model128_2_classi.pth'))
+    network.load_state_dict(torch.load('./resources/docFigure/pesi/model_final.pth'))
 network = network.to(device)
 optimizer = optim.SGD(network.parameters(), lr=lr, momentum=momentum)
 #optimizer.load_state_dict(torch.load('./savedState/optimizer' + dataset_type + '.pth'))
@@ -146,8 +149,8 @@ criterion = nn.CrossEntropyLoss()
 images, labels = next(iter(train_loader))
 grid = torchvision.utils.make_grid(images)
 
-tb = SummaryWriter(comment=f' batch_size={batch_size} dim_descrittore={dim_descrittore} kernel_size= {kernel_size}')
-tb.add_image('Faces', grid)
+#tb = SummaryWriter(comment=f' batch_size={batch_size} dim_descrittore={dim_descrittore} kernel_size= {kernel_size}')
+#tb.add_image('Faces', grid)
 
 
 print('\033[92m' + 'batch_size=%s \ndim_descrittore=%s kernel_size=%s \033[0m'% (batch_size, dim_descrittore, kernel_size))
@@ -155,14 +158,14 @@ for epoch in range(n_epochs):
     #scheduler.step()
     train(epoch)
     test(epoch)
-tb.close()
+#tb.close()
 
 ### Testare i risultati dopo l'addestramento ###
 #Pulire train.json per memorizzare solo le informazioni sulle figure
-slimJson()
+#slimJson()
 
-extractImagesInfoIntoJson()
-extractCroppedFigures()
-testFigure()
-testResults()
+#extractImagesInfoIntoJson()
+#extractCroppedFigures()
+#testFigure()
+#testResults()
 

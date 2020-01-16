@@ -91,7 +91,8 @@ def testFigure():
     img_size = (128,128)
     dim_descrittore = 1024
     kernel_size = 5
-    plots = [2, 3, 5, 11, 13, 17, 19, 21, 23]
+    #plots = [2, 3, 5, 11, 13, 17, 19, 21, 23]
+    plots = [0]
     image_dataset = torchvision.datasets.ImageFolder(
         root='./resources/docFigure/data/training',
         transform=torchvision.transforms.Compose([
@@ -99,7 +100,7 @@ def testFigure():
             torchvision.transforms.ToTensor(),
         ])
     )
-    print("Train: Detected Classes are: ", image_dataset.class_to_idx)
+    #print("Train: Detected Classes are: ", image_dataset.class_to_idx)
     key_list_classes = list(image_dataset.class_to_idx.keys())
     val_list_classes = list(image_dataset.class_to_idx.values())
     image_dataset = torchvision.datasets.ImageFolder(
@@ -119,34 +120,33 @@ def testFigure():
         shuffle=True
     )
     network = NnModel(dim_descrittore, kernel_size)
-    network.load_state_dict(torch.load('./resources/docFigure/pesi/model128_2.pth'))
-    print("\n"*4)
+    network.load_state_dict(torch.load('./resources/docFigure/pesi/model128_2_classi.pth'))
+    #print("\n"*4)
 
-    with open('./resources/json/figureBboxInfo.json', 'r') as fp:
-        images = json.load(fp)
-        plotsFigures = []
-        for j, (image, label) in enumerate(image_loader):
-            imageLabel = str(key_list_imageLabes[val_list_imageLabes.index(label.item())])
-            print("Image label: "+ imageLabel)
-            predictions = {}
-            for i in range(20):
-                risultato = network(image)
-                pred = risultato.data.max(1, keepdim=True)[1]
-                pred = pred.item()
-                if pred in predictions.keys():
-                    predictions[pred] += 1
-                else:
-                    predictions[pred] = 1
-            prediction = key_list_classes[val_list_classes.index(max(predictions.items(), key=operator.itemgetter(1))[0])]
-            print("Prediction: ",prediction)
-            if max(predictions.items(), key=operator.itemgetter(1))[0] in plots:
-                print("It's a plot!")
-                plotsFigures.append({'file_name': imageLabel})
-            print("Progress: {:.2f}%".format((j / len(image_loader)) * 100))
-            print("*"*100)
-    with open('./resources/json/plotsFigures.json', 'w') as fp:
-        json.dump(plotsFigures, fp)
-
+    #plotsFigures = []
+    image, label = next(iter(image_loader))
+    imageLabel = str(key_list_imageLabes[val_list_imageLabes.index(label.item())])
+    #print("Image label: "+ imageLabel)
+    predictions = {}
+    for i in range(20):
+        risultato = network(image)
+        pred = risultato.data.max(1, keepdim=True)[1]
+        pred = pred.item()
+        if pred in predictions.keys():
+            predictions[pred] += 1
+        else:
+            predictions[pred] = 1
+    prediction = key_list_classes[val_list_classes.index(max(predictions.items(), key=operator.itemgetter(1))[0])]
+    #print("Prediction: ",prediction)
+    if max(predictions.items(), key=operator.itemgetter(1))[0] in plots:
+        #print("It's a plot!")
+        #plotsFigures.append({'file_name': imageLabel})
+        isPlot = True
+    else:
+        isPlot = False
+    #print("Progress: {:.2f}%".format((j / len(image_loader)) * 100))
+    #print("*"*100)
+    return isPlot
 
 
 def extractImagesInfoIntoJson():
@@ -173,28 +173,39 @@ def extractImagesInfoIntoJson():
 
 def extractCroppedFigures():
     with open('./resources/json/figureBboxInfo.json', 'r') as fp:
-        images = json.load(fp)
+        figures = json.load(fp)
         pathJpg = './resources/jpg/publaynet/train/'
-        for i, image in enumerate(images):
-            pathFile = pathJpg + image['file_name']
+        plots = []
+        for i, figure in enumerate(figures):
+            pathFile = pathJpg + figure['file_name']
             if os.path.isfile(pathFile) and  os.path.exists(pathFile):
                 img = cv2.imread(pathFile)
-                x = int(image['bbox'][0])
-                y = int(image['bbox'][1])
-                width = int(image['bbox'][2])
-                height = int(image['bbox'][3])
+                x = int(figure['bbox'][0])
+                y = int(figure['bbox'][1])
+                width = int(figure['bbox'][2])
+                height = int(figure['bbox'][3])
                 crop_img = img[y:y + height, x:x + width]
-                name = image["file_name"].split(".")[0]
+                name = figure["file_name"].split(".")[0]
                 pathFile = "./resources/docFigure/data/test/"+name+"/"
                 if not os.path.exists(pathFile):
                     os.makedirs(pathFile)
-                pathFile += image['file_name']
+                pathFile += figure['file_name']
                 #print(pathFile)
                 try:
                     cv2.imwrite(pathFile, crop_img)
+                    #print("Testing figure....")
+                    isPlot = testFigure()
+                    if isPlot:
+                        plots.append(figure)
+                    command = "rm -r ./resources/docFigure/data/test/"
+                    os.system(command)
+                    print("Figures tested: {:.2f}%".format((i / len(figures)) * 100))
                 except:
-                    pass
-                print("Cropping figures: {:.2f}%".format((i / len(images)) * 100))
+                    command = "rm -r ./resources/docFigure/data/test/"
+                    os.system(command)
+                    print("Figures tested (not found): {:.2f}%".format((i / len(figures)) * 100))
+        with open('./resources/json/plotVeri.json', 'w') as fp:
+            json.dump(plots, fp)
 
 
 
@@ -224,6 +235,7 @@ def slimJson():
             json.dump(samples, fp)
 
 
+#Non più necessario al momento
 def testResults():
     with open('./resources/json/plotsFigures.json', 'r') as fp:
         plots = json.load(fp)
@@ -232,8 +244,28 @@ def testResults():
             os.system(command)
             print("Copying the result of the predictions: {:.2f}%".format((i/len(plots))))
 
+
+def showPlotsPages():
+    with open('./resources/json/plotVeri.json', 'r') as fp:
+        plots = json.load(fp)
+        # for i, plot in enumerate(plots):
+        #     command = "cp ./resources/jpg/publaynet/train/"+plot['file_name']+" ./resources/jpg/predictedPages/"
+        #     os.system(command)
+        #     print("Copying the result of the predictions: {:.2f}%".format((i/len(plots))*100))
+        with open('./resources/json/figureBboxInfo.json', 'r') as f:
+            figures = json.load(f)
+            for i, figure in enumerate(figures):
+                command = "cp ./resources/jpg/publaynet/train/"+figure['file_name']+" ./resources/jpg/otherPages/"
+                os.system(command)
+                print("Copying other images: {:.2f}%".format((i/len(plots))*100))
+            for i, plot in enumerate(plots):
+                command = "rm ./resources/jpg/otherPages/" + plot['file_name']
+                os.system(command)
+                print("Cleaning: {:.2f}%".format((i / len(plots)) * 100))
+
 #slimJson()
 #extractImagesInfoIntoJson()
 #extractCroppedFigures()
-#testFigure()
 #testResults()
+#showPlotsPages()
+
