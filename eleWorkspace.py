@@ -59,7 +59,25 @@ def find_middle_string():
     print(result.group(1))
 
 
-find_middle_string()
+def iterate():
+    arr = [3, 4, 5, 6]
+    for i in range(2, 4):
+        print(i)
+        if i == 5:
+            break
+
+
+def change_vals():
+    a = 2
+    b = a
+    a = a + 1
+    print('b:')
+    print(b)
+    print('a:')
+    print(a)
+
+
+change_vals()
 
 
 """
