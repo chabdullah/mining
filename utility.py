@@ -9,6 +9,7 @@ import json
 import torch
 from NnModel import NnModel
 import operator
+import numpy as np
 from os import listdir
 from os.path import isfile, join
 import pandas as pd
@@ -262,6 +263,36 @@ def showPlotsPages():
                 command = "rm ./resources/jpg/otherPages/" + plot['file_name']
                 os.system(command)
                 print("Cleaning: {:.2f}%".format((i / len(plots)) * 100))
+
+
+def blackPixelTreshold():
+    pixelTreshold = 1500
+    jpgPath = "./resources/examples/sbiancate/"
+    images = os.listdir(jpgPath)
+
+    for img in images:
+        imgPath = jpgPath + img
+        image = cv2.imread(imgPath)
+        gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+
+        # Set threshold level
+        threshold_level = 200
+
+        # Find coordinates of all pixels below threshold
+        coords = np.column_stack(np.where(gray < threshold_level))
+
+        # print(len(coords))
+        if len(coords) > pixelTreshold:
+            # Create mask of all pixels lower than threshold level
+            mask = gray < threshold_level
+
+            # Color the pixels in the mask
+            image[mask] = (204, 119, 0)
+
+            cv2.imshow('image', image)
+            cv2.waitKey()
+
+
 
 #slimJson()
 #extractImagesInfoIntoJson()
