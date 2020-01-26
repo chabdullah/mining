@@ -265,6 +265,7 @@ def showPlotsPages():
                 print("Cleaning: {:.2f}%".format((i / len(plots)) * 100))
 
 
+# Mostrare le immgini che hanno un numero di pixel colorati sopra una soglia (pagine che sono state "sbiancate" attraverso la funzione path_to_white() in draw_rects_jpeg.py)
 def blackPixelTreshold():
     pixelTreshold = 1500
     jpgPath = "./resources/examples/sbiancate/"
@@ -295,8 +296,9 @@ def blackPixelTreshold():
 
 
 #slimJson()
-#extractImagesInfoIntoJson()
+extractImagesInfoIntoJson()
 #extractCroppedFigures()
 #testResults()
 #showPlotsPages()
+
 
