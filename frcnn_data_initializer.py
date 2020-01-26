@@ -8,12 +8,10 @@ from pdf2image import convert_from_path
 import os
 from PIL import Image
 
-#jpgPath = "./resources/jpg/publaynet/train/"
 
-
-#Salva i dati dei plot dal json a csv (in certo ordine/format)
+#Salva i dati dei plot dal json a csv (in certo ordine/format). Si potrebbe anche evitare questa funzione e convertire il json direttamente in txt
 def jsonFigures2CSV():
-    with open('./keras_frcnn/data/train.csv', 'w', newline='') as file:
+    with open('../keras_frcnn/data/train.csv', 'w', newline='') as file:
         writer = csv.writer(file)
         writer.writerow(["image_names", "cell_type", "xmin", "xmax", "ymin", "ymax"])
         plot_veri_json = "./resources/json/plotVeri.json"
@@ -55,16 +53,16 @@ def jsonFigures2CSV():
                     print("Progress (CSV): %4.2f %%. Plot: %5d, Noplot: %5d" % (((i/len(figures))*100),numberPlot,numberNonPlot))
     # Plot e non plot totali   -->   (Plot= 14848, Non Plot = 94444)
     # cell_type sono le diverse classi (ovvero, in questo caso, plot e noPlot)
-    train = pd.read_csv("./keras_frcnn/data/train.csv")
+    train = pd.read_csv("../keras_frcnn/data/train.csv")
     print(train["cell_type"].value_counts())
 
 
 
 
-#Converte csv in txt
+#Converte csv in txt (Il txt verrà dato in ingresso al frcnn)
 def csv2txt():
     # read the csv file using read_csv function of pandas
-    train = pd.read_csv("./keras_frcnn/data/train.csv")
+    train = pd.read_csv("../keras_frcnn/data/train.csv")
     train.head()
     data = pd.DataFrame()
     data['format'] = train['image_names']
@@ -79,7 +77,8 @@ def csv2txt():
         print("Progress (txt_2) : {:.2f}%".format((i / data.shape[0])*100))
     data.to_csv('./keras_frcnn/data/annotate.txt', header=None, index=None, sep=' ')
 
-#pdf2jpg
+
+# pdf2jpg per fare i test
 def pdf2jpg():
     inputPath = "./keras_frcnn/data/test/pdf/"
     outputPath = "./keras_frcnn/data/test/jpg/"
@@ -92,7 +91,3 @@ def pdf2jpg():
             imgPath = outputPath+pdfName+"_"+str(i)+".jpg"
             page = page.resize((612,792), Image.ANTIALIAS)
             page.save(imgPath, 'JPEG')
-
-#jsonFigures2CSV()
-#csv2txt()
-#pdf2jpg()
