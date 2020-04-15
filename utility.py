@@ -296,7 +296,7 @@ def blackPixelTreshold():
 
 
 #slimJson()
-extractImagesInfoIntoJson()
+#extractImagesInfoIntoJson()
 #extractCroppedFigures()
 #testResults()
 #showPlotsPages()

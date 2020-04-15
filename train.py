@@ -19,6 +19,7 @@ from torchvision.utils import save_image
 from itertools import product
 from NnModel import NnModel
 from utility import slimJson, extractImagesInfoIntoJson, extractCroppedFigures, testFigure, testResults
+import matplotlib.pyplot as plt
 
 
 def load_data(batch_size):
@@ -104,6 +105,8 @@ def test(epoch):
     100. * correct / len(val_loader.dataset)))
   #tb.add_scalar('Test Loss', 100.0 * train_loss, epoch)
   #tb.add_scalar('Test Accuracy', 100. * correct/len(val_loader.dataset), epoch)
+  x_epoch.append(epoch)
+  y_accuracy.append(100. * correct / len(val_loader.dataset))
 
 
 def setDatasetFolder(dataset):
@@ -132,9 +135,11 @@ lr = 0.01
 momentum = 0.5
 log_interval = 10
 batch_size = 16
-n_epochs = 15
+n_epochs = 30
 img_size = (128,128)
-pretrained = True
+pretrained = False
+x_epoch = []
+y_accuracy = []
 
 train_loader, val_loader = load_data(batch_size)
 network = NnModel(dim_descrittore, kernel_size)
@@ -152,13 +157,18 @@ grid = torchvision.utils.make_grid(images)
 #tb = SummaryWriter(comment=f' batch_size={batch_size} dim_descrittore={dim_descrittore} kernel_size= {kernel_size}')
 #tb.add_image('Faces', grid)
 
-
 print('\033[92m' + 'batch_size=%s \ndim_descrittore=%s kernel_size=%s \033[0m'% (batch_size, dim_descrittore, kernel_size))
 for epoch in range(n_epochs):
     #scheduler.step()
     train(epoch)
     test(epoch)
 #tb.close()
+
+plt.plot(x_epoch, y_accuracy)
+plt.xlabel('Epoch')
+plt.ylabel('Accuracy')
+plt.title('CNN Accuracy')
+plt.savefig('./resources/docFigure/accuracy.png')
 
 ### Testare i risultati dopo l'addestramento ###
 #Pulire train.json per memorizzare solo le informazioni sulle figure
