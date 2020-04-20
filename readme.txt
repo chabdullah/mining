@@ -12,10 +12,10 @@ python train_frcnn.py -o simple -p /keras_frcnn/data/annotate.txt
 
 - test_frcnn.py
 Per calcolare i bbox su test set (i valori vengono salvati nel file bboxTrovati.txt)
+python test_frcnn.py -p keras_frcnn/data/augmentation_sporco/annotate_augmentated_test.txt
 
 - frcnn_data.py
 Per calcolare e visualizzare l'accuratezza:
-python test_frcnn.py -p test_images
 
 Gli altri file sono di utility
 
