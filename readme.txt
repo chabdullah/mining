@@ -15,7 +15,7 @@ Per calcolare i bbox su test set (i valori vengono salvati nel file bboxTrovati.
 python test_frcnn.py -p keras_frcnn/data/augmentation_sporco/annotate_augmentated_test.txt
 
 - frcnn_data.py
-Per calcolare e visualizzare l'accuratezza:
+Per calcolare e visualizzare l'accuratezza
 
 Gli altri file sono di utility
 
