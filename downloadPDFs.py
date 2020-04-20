@@ -5,7 +5,7 @@ from urllib.error import URLError, HTTPError
 
 def downloadPDFs():
     directoryPDF = "./resources/pdf/"
-    # Questo serve come una specie di autenticazione da quel poco che ho cercato, altrimenti mi vede come un BOT e non mi permette di scaricare in maniera automatizzata da alcuni url
+    # Questo serve come un'autenticazione, altrimenti mi vede come un BOT e non mi permette di scaricare in maniera automatizzata da alcuni url
     headers = {'User-Agent': 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:71.0) Gecko/20100101 Firefox/71.0'}
 
     # Per tenere traccia di tutti i pdf che non vengono scaricati

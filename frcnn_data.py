@@ -498,7 +498,7 @@ def frcnnTestAccuracy(results_imgs):
     sum_accuracy = 0
     n_pages = 0
     with open("./keras_frcnn/data/test/"+results_imgs+"/bboxTrovati.txt", "r") as f1:
-        with open("./keras_frcnn/data/ffcv/testB_0.txt", "r")as f2:
+        with open("./keras_frcnn/data/augmentation_sporco/annotate_augmentated_test.txt", "r")as f2:
             bbox_trovati = f1.read()
             bbox_trovati = bbox_trovati.split("\n")
             bbox_trovati.pop(-1)
@@ -511,10 +511,10 @@ def frcnnTestAccuracy(results_imgs):
                 try:
                     if test_pages[i] != "" and test_pages[i].split(",")[5] == "plot":
                         test_name = test_pages[i].split(",")[0].split("/")[5]
-                        #try:
-                            #draw = Image.open("./resources/jpg/publaynet/train/"+test_name)
-                        #except:
-                        draw = Image.new('RGB', (1080, 720))
+                        try:
+                            draw = Image.open("./resources/jpg/publaynet/train/"+test_name)
+                        except:
+                            draw = Image.new('RGB', (1080, 720))
                         xMin = int(float(test_pages[i].split(",")[1]))
                         yMin = int(float(test_pages[i].split(",")[2]))
                         xMax = int(float(test_pages[i].split(",")[3]))
@@ -549,13 +549,12 @@ def frcnnTestAccuracy(results_imgs):
                                 poly_ous = Polygon(box)
                                 ImageDraw.Draw(draw).rectangle(((xMin_ous, yMin_ous), (xMax_ous, yMax_ous)), fill=None, outline="red", width=2)
                                 poly_2 = poly_2.union(poly_ous)
-                                print("Trovato")
 
                         draw.save("./keras_frcnn/data/test/" + results_imgs + "/bbox/" + test_name)
                         #print("Predicted Area: ", poly_1.area)
                         #print("True Area: ", poly_2.area)
                         accuracy = poly_1.intersection(poly_2).area / poly_1.union(poly_2).area
-                        print("Accuracy: ", accuracy)
+                        #print("Accuracy: ", accuracy)
                         sum_accuracy += accuracy
                         n_pages += 1
                     else:
@@ -564,7 +563,7 @@ def frcnnTestAccuracy(results_imgs):
                     break
 
     final_accuracy = sum_accuracy/n_pages
-    print("Total accuracy: ",final_accuracy)
+    print("Total accuracy: {:.2f}".format(final_accuracy))
 
 
 
@@ -575,4 +574,5 @@ def frcnnTestAccuracy(results_imgs):
 #final_annotation()
 #split_final_annotation()
 #prepareTestJPG()
-frcnnTestAccuracy("results_imgs_trainB_0")
+frcnnTestAccuracy("results_imgs_augmentated_sporco")
+

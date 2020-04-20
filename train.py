@@ -1,22 +1,9 @@
-import torch
-import torchvision
-import torchvision.transforms as transforms
 from shutil import copy2
 import os
 import numpy as np
 import torch
 import torchvision
-import matplotlib.pyplot as plt
-# from sklearn.metrics import confusion_matrix
-from time import time
-
-from torch.optim.lr_scheduler import StepLR
-from torchvision import datasets, transforms
 from torch import nn, optim
-import torch.nn.functional as F
-#from tensorboardX import SummaryWriter
-from torchvision.utils import save_image
-from itertools import product
 from NnModel import NnModel
 from utility import slimJson, extractImagesInfoIntoJson, extractCroppedFigures, testFigure, testResults
 import matplotlib.pyplot as plt
